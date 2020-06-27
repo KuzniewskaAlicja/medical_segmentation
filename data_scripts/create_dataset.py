@@ -37,7 +37,6 @@ def get_data_paths():
 def final_save_path(path: Path, curr_save_path: Path,
                     mask: bool, first: bool, idx: int,
                     save_format: str) -> Path:
-    save_path = ''
     if first and mask:
         save_path = Path(f'{curr_save_path}/{path.name.strip("_mask.nii.gz")}_{idx}.{save_format}')
     elif first and not mask:

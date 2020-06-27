@@ -7,37 +7,11 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
-import data_scripts.scan_operations as scan
 from sklearn.preprocessing import MinMaxScaler
-from typing import Tuple
 
+from data_scripts.data_transformation import preprocess_data, postprocess_data
+import data_scripts.scan_operations as scan
 from network.unet import Unet
-
-
-def rotate(array: np.ndarray, angle: int) -> np.ndarray:
-    centre = (array.shape[0] // 2, array.shape[1] // 2)
-    rot_mat = cv2.getRotationMatrix2D(centre, angle, 1.0)
-    rotated = cv2.warpAffine(array, rot_mat, (array.shape[1], array.shape[0]))
-    
-    return rotated
-
-
-def preprocess_data(data: np.ndarray) -> np.ndarray:
-    data = cv2.resize(data, (256, 256), interpolation=cv2.INTER_AREA).astype(np.float32)
-    data = rotate(data, 90)
-    data = MinMaxScaler().fit_transform(data)
-    data = np.expand_dims(data, axis=2)
-    
-    return data
-
-
-def postprocess_data(input_data_size: tuple, data: np.ndarray) -> np.ndarray:
-    data = data.squeeze()
-    data = rotate(data, -90)
-    data = np.where(data > 0.5, 1, 0)
-    data = cv2.resize(data.astype('uint8'), input_data_size,
-                      interpolation=cv2.INTER_AREA)
-    return data
 
 
 def save_labels(path: Path, model, first=True):
@@ -66,6 +40,7 @@ def save_labels(path: Path, model, first=True):
             output = postprocess_data((z_size, y_size), prediction)
             labels[idx] = output
         scan.save_labels(labels, affine, save_path)
+
 
 def main():
     first_dataset_test_path = Path('./scans/FirstDataset/test')
